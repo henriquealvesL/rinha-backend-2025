@@ -1,0 +1,8 @@
+DROP TABLE IF EXISTS payments;
+
+CREATE TABLE payments(
+  id SERIAL PRIMARY KEY,
+  correlation_id UUID UNIQUE NOT NULL,
+  amount INTEGER NOT NULL,
+  processed_at TIMESTAMP NOT NULL DEFAULT NOW()
+);
