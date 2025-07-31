@@ -6,20 +6,18 @@ services:
 
     cpus: '0.5'
     mem_limit: '150M'
-    environment:
-      - DB_HOST=db
-      - DB_PORT=5432
-      - DB_USER=root
-      - DB_PASSWORD=root
-      - DB_DATABASE=rinha
     depends_on:
       db:
         condition: service_healthy
+      redis:
+        condition: service_started
 
   db:
     image: postgres:16-alpine
     volumes:
       - pg_data:/var/lib/postgresql/data
+      - ./init:/docker-entrypoint-initdb.d
+
     environment:
       - POSTGRES_USER=root
       - POSTGRES_PASSWORD=root
@@ -32,6 +30,28 @@ services:
 
     ports:
       - '5432:5432'
+
+  redis:
+    image: redis:8-alpine
+    ports:
+      - '6379:6379'
+    environment:
+      - REDIS_HOST=redis
+
+  worker:
+    build: .
+    command: node dist/queues/workers/paymentWorker.js
+    cpus: '0.5'
+    mem_limit: '150M'
+    environment:
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_USER=root
+      - DB_PASSWORD=root
+      - DB_DATABASE=rinha
+    depends_on:
+      - redis
+      - db
 
 volumes:
   pg_data:
