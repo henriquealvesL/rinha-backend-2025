@@ -14,6 +14,6 @@ export async function paymentRoutes(app: FastifyInstance) {
 
     await paymentQueue.add('new-payment', { correlationId, amount });
 
-    return reply.code(202);
+    return reply.code(202).send({ message: 'Payment received' });
   });
 }
