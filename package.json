@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "nodemon --watch 'src/**/*.ts ' --exec 'ts-node' src/server.ts",
+    "dev:worker": "nodemon --watch src/queues/workers --exec ts-node src/queues/workers/paymentWorker.ts",
     "build": "rm -rf dist && tsc"
   },
   "keywords": [],
