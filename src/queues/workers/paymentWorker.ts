@@ -6,13 +6,49 @@ const paymentJob = async (job: any) => {
   const { correlationId, amount } = job.data;
   console.log(`Processing new job: ${correlationId}`);
 
-  try {
-    const amountInCents = Math.round(amount * 100);
+  const processors: ('default' | 'fallback')[] = ['default', 'fallback'];
 
-    await paymentRepository.create(correlationId, amountInCents);
-  } catch (error) {
-    console.log('Failed to process job');
-    throw error;
+  while (true) {
+    let processed = false;
+    const processedAt = new Date();
+    for (const processor of processors) {
+      try {
+        await paymentRepository.sendToProcessor(
+          processor,
+          correlationId,
+          amount,
+          processedAt,
+        );
+
+        await redis.set(
+          `payment:${correlationId}`,
+          `PROCESSED:${processor}`,
+          'EX',
+          3600,
+        );
+
+        await paymentRepository.create(
+          correlationId,
+          amount,
+          processor,
+          processedAt,
+        );
+        processed = true;
+        console.log(`Job ${correlationId} processed by ${processor}`);
+        return;
+      } catch (error) {
+        console.warn(
+          `Processor ${processor} failed for ${correlationId}, retrying next...`,
+        );
+      }
+    }
+
+    if (!processed) {
+      console.warn(
+        `All processors failed for ${correlationId}, retrying in 5s...`,
+      );
+      await new Promise((resolve) => setTimeout(resolve, 5000));
+    }
   }
 };
 
