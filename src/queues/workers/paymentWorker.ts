@@ -26,7 +26,7 @@ const paymentJob = async (job: any) => {
           'EX',
           3600,
         );
-
+        console.log('Enviou para o processor');
         await paymentRepository.create(
           correlationId,
           amount,

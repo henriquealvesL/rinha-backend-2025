@@ -11,11 +11,11 @@ type Processor = 'default' | 'fallback';
 
 const PAYMENT_PROCESSORS = {
   default: {
-    url: 'http://localhost:8001/payments',
+    url: 'http://payment-processor-default:8080/payments',
     fee: 0.05, // 5%
   },
   fallback: {
-    url: 'http://localhost:8002/payments',
+    url: 'http://payment-processor-fallback:8080/payments',
     fee: 0.15, // 15%
   },
 };
